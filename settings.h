@@ -6,7 +6,7 @@
 
 struct Settings {
 	int map_length;
-	float reprod_chance;
+	int reprod_chance;
 	int wolf_health;
 	int rab1, rab2;
 	int wlf_m1, wlf_m2;

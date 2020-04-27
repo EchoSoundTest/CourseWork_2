@@ -10,8 +10,8 @@
 int randomize(int val1, int val2); /*Функция возвращает случайное целое число в диапазоне от val1 до val2 включительно*/
 void generate_model(struct Animals *anim_arr, struct Anim_counter anim_cnt, int map_len, int an_health);
 void place_animals(struct Animals *anim_arr, int cur_anim_cnt, char an_type, int map_len, int an_health);
-void turn(struct Animals *anim_arr, int map_len);
-void turn_rabbit(struct Animals *cur_anim, struct Animals *anim_arr, int map_len);
+void turn(struct Animals *anim_arr, int map_len, int reprod_chance, int an_health);
+void turn_rabbit(struct Animals *cur_anim, struct Animals *anim_arr, int map_len, int reprod_chance);
 void turn_wolf_m(struct Animals *cur_anim, struct Animals *anim_arr, int map_len);
 void turn_wolf_f(struct Animals *cur_anim, struct Animals *anim_arr, int map_len);
 void check_near_Anims(struct Animals cur_anim, struct Animals *anim_arr, int *id_arr, int map_len);
@@ -50,7 +50,7 @@ int main() {
 
 
 		system("cls"); 
-		turn(animals, settings.map_length);
+		turn(animals, settings.map_length, settings.reprod_chance, settings.wolf_health);
 		for (int i = 0; i < settings.map_length; i++) {
 			for (int j = 0; j < settings.map_length; j++) {
 				switch ((animals + j + i * settings.map_length)->type) {
@@ -123,7 +123,7 @@ void place_animals(struct Animals *anim_arr, int cur_anim_cnt, char an_type, int
 	//printf("%d\n\n", n);
 }
 
-void turn(struct Animals *anim_arr, int map_len) {
+void turn(struct Animals *anim_arr, int map_len, int reprod_chance, int an_health) {
 	int offset;
 	for (int i = 0; i < map_len; i++) {
 		for (int j = 0; j < map_len; j++) {
@@ -132,11 +132,13 @@ void turn(struct Animals *anim_arr, int map_len) {
 				(anim_arr + offset)->isMoved = 1;
 				switch ((anim_arr + offset)->type) {
 				case A_RABBIT:
-					turn_rabbit((anim_arr + offset), anim_arr, map_len);
+					turn_rabbit((anim_arr + offset), anim_arr, map_len, reprod_chance);
 					break;
 				case A_WOLF_M:
+					turn_wolf_m((anim_arr + offset), anim_arr, map_len, reprod_chance);
 					break;
 				case A_WOLF_F:
+					turn_wolf_f((anim_arr + offset), anim_arr, map_len, reprod_chance);
 					break;
 				default:
 					break;
@@ -152,7 +154,7 @@ void turn(struct Animals *anim_arr, int map_len) {
 	}
 }
 
-void turn_rabbit(struct Animals *cur_anim, struct Animals *anim_arr, int map_len) {		
+void turn_rabbit(struct Animals *cur_anim, struct Animals *anim_arr, int map_len, int reprod_chance) {
 	int nearAnims[9];																	
 	int turn_vars = 0;																	
 	int num;
@@ -165,22 +167,43 @@ void turn_rabbit(struct Animals *cur_anim, struct Animals *anim_arr, int map_len
 		}
 	}
 	num = randomize(1, turn_vars);
+
 #ifdef PDEBUG
 	printf("%d\n", num);
 #endif
-//	if (num > 1) {																		// Если num = 0, кролик остается на месте. (num-1) равен порядковому номеру
-//		num--;																			// пустой клетки в массиве nearAnims, на которую сходит кролик
-		for (int i = 0; i < 9; i++) {													
+	
+	for (int i = 0; i < 9; i++) {													
+		if (nearAnims[i] == 0) {													// num равен порядковому номеру
+																					// пустой клетки в массиве nearAnims, на которую сходит кролик
+			num--;
+		}
+		if (num == 0) {
+			index = i ;
+			break;
+		}
+	}
+	move_animal(cur_anim, anim_arr, index, map_len);
+
+	if (randomize(1, 100) <= reprod_chance) {
+		check_near_Anims(*cur_anim, anim_arr, nearAnims, map_len);
+		nearAnims[4] = 1;
+		for (int i = 0; i < 9; i++) {
 			if (nearAnims[i] == 0) {
-				num--;
+				turn_vars++;
+			}
+		}
+		num = randomize(1, turn_vars);
+		for (int i = 0; i < 9; i++) {
+			if (nearAnims[i] == 0) {												// num равен порядковому номеру пустой клетки
+				num--;																// в массиве nearAnims, в которой появится новый кролик
 			}
 			if (num == 0) {
-				index = i ;
+				(anim_arr + (cur_anim->x + (i % 3 - 1)) + (cur_anim->y + (i / 3 - 1)) * map_len)->type = A_RABBIT;
+				(anim_arr + (cur_anim->x + (i % 3 - 1)) + (cur_anim->y + (i / 3 - 1)) * map_len)->isMoved = 1;
 				break;
 			}
 		}
-		move_animal(cur_anim, anim_arr, index, map_len);
-//	}
+	}
 
 #ifdef PDEBUG
 	printf("%d\n", index);
@@ -192,11 +215,81 @@ void turn_rabbit(struct Animals *cur_anim, struct Animals *anim_arr, int map_len
 }
 
 void turn_wolf_m(struct Animals *cur_anim, struct Animals *anim_arr, int map_len) {
+	int nearAnims[9];
+	int turn_vars = 0;
+	int num;
+	int index = 0;
 
+	check_near_Anims(*cur_anim, anim_arr, nearAnims, map_len);
+	for (int i = 0; i < 9; i++) {
+		if (nearAnims[i] == 0) {
+			turn_vars++;
+		}
+	}
+	num = randomize(1, turn_vars);
+
+#ifdef PDEBUG
+	printf("%d\n", num);
+#endif
+
+	for (int i = 0; i < 9; i++) {
+		if (nearAnims[i] == 0) {													// num равен порядковому номеру
+																					// пустой клетки в массиве nearAnims, на которую сходит кролик
+			num--;
+		}
+		if (num == 0) {
+			index = i;
+			break;
+		}
+	}
+	move_animal(cur_anim, anim_arr, index, map_len);
+
+#ifdef PDEBUG
+	printf("%d\n", index);
+	for (int i = 0; i < 9; i++) {
+		printf("%d ", nearAnims[i]);
+	}
+	printf("\n");
+#endif
 }
 
 void turn_wolf_f(struct Animals *cur_anim, struct Animals *anim_arr, int map_len) {
+	int nearAnims[9];
+	int turn_vars = 0;
+	int num;
+	int index = 0;
 
+	check_near_Anims(*cur_anim, anim_arr, nearAnims, map_len);
+	for (int i = 0; i < 9; i++) {
+		if (nearAnims[i] == 0) {
+			turn_vars++;
+		}
+	}
+	num = randomize(1, turn_vars);
+
+#ifdef PDEBUG
+	printf("%d\n", num);
+#endif
+
+	for (int i = 0; i < 9; i++) {
+		if (nearAnims[i] == 0) {													// num равен порядковому номеру
+																					// пустой клетки в массиве nearAnims, на которую сходит кролик
+			num--;
+		}
+		if (num == 0) {
+			index = i;
+			break;
+		}
+	}
+	move_animal(cur_anim, anim_arr, index, map_len);
+
+#ifdef PDEBUG
+	printf("%d\n", index);
+	for (int i = 0; i < 9; i++) {
+		printf("%d ", nearAnims[i]);
+	}
+	printf("\n");
+#endif
 }
 
 void check_near_Anims(struct Animals cur_anim, struct Animals *anim_arr, int *id_arr, int map_len) {
@@ -244,44 +337,7 @@ void check_near_Anims(struct Animals cur_anim, struct Animals *anim_arr, int *id
 void move_animal(struct Animals *cur_anim, struct Animals *anim_arr, int index, int map_len) {
 	int locX = index % 3 - 1;
 	int locY = index / 3 - 1;
-/*
-	switch (index) {
-	case 0:
-		locX = -1;
-		locY = -1;
-		break;
-	case 1:
-		locX = 0;
-		locY = -1;
-		break;
-	case 2:
-		locX = 1;
-		locY = -1;
-		break;
-	case 3:
-		locX = -1;
-		locY = 0;
-		break;
-	case 4:
-		locX = 1;
-		locY = 0;
-		break;
-	case 5:
-		locX = -1;
-		locY = 1;
-		break;
-	case 6:
-		locX = 0;
-		locY = 1;
-		break;
-	case 7:
-		locX = 1;
-		locY = 1;
-		break;
-	default:
-		break;
-	}
-*/
+
 	if (!((locX == 0) && (locY == 0))) {
 		locX += cur_anim->x;
 		locY += cur_anim->y;
