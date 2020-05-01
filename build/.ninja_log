@@ -35,3 +35,17 @@
 498	808	609719572	CourseWork_2.exe	5e504271e87eb53d
 1	481	609719644	CMakeFiles/CourseWork_2.dir/main.c.obj	de96a732d6b60790
 483	799	609719644	CourseWork_2.exe	5e504271e87eb53d
+<<<<<<< Updated upstream
+=======
+1	2376	610048045	CMakeFiles/CourseWork_2.dir/main.c.obj	de96a732d6b60790
+2413	4525	610048047	CourseWork_2.exe	5e504271e87eb53d
+2	760	610051000	CMakeFiles/CourseWork_2.dir/settings.c.obj	9a6594983fc91755
+0	796	610051000	CMakeFiles/CourseWork_2.dir/main.c.obj	de96a732d6b60790
+798	1320	610051000	CourseWork_2.exe	5e504271e87eb53d
+0	778	610051692	CMakeFiles/CourseWork_2.dir/main.c.obj	de96a732d6b60790
+793	1168	610051692	CourseWork_2.exe	5e504271e87eb53d
+0	508	610051805	CMakeFiles/CourseWork_2.dir/main.c.obj	de96a732d6b60790
+509	869	610051805	CourseWork_2.exe	5e504271e87eb53d
+0	527	610052215	CMakeFiles/CourseWork_2.dir/main.c.obj	de96a732d6b60790
+528	891	610052215	CourseWork_2.exe	5e504271e87eb53d
+>>>>>>> Stashed changes

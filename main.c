@@ -8,6 +8,7 @@
 #include "settings.h"
 
 int randomize(int val1, int val2); /*Функция возвращает случайное целое число в диапазоне от val1 до val2 включительно*/
+<<<<<<< Updated upstream
 void generate_model(struct Animals *anim_arr, struct Anim_counter anim_cnt, int map_len, int an_health);
 void place_animals(struct Animals *anim_arr, int cur_anim_cnt, char an_type, int map_len, int an_health);
 void turn(struct Animals *anim_arr, int map_len, int reprod_chance, int an_health);
@@ -16,6 +17,16 @@ void turn_wolf_m(struct Animals *cur_anim, struct Animals *anim_arr, int map_len
 void turn_wolf_f(struct Animals *cur_anim, struct Animals *anim_arr, int map_len);
 void check_near_Anims(struct Animals cur_anim, struct Animals *anim_arr, int *id_arr, int map_len);
 void move_animal(struct Animals *cur_anim, struct Animals *anim_arr, int index, int map_len);
+=======
+void generate_model(pAnimals anim_arr, struct Anim_counter anim_cnt, int map_len, int an_health);
+void place_animals(pAnimals anim_arr, int cur_anim_cnt, int an_type, int map_len, int an_health);
+void turn(pAnimals anim_arr, int map_len, int reprod_chance, int an_health);
+void turn_rabbit(pAnimals cur_anim, pAnimals anim_arr, int map_len, int reprod_chance);
+void turn_wolf_m(pAnimals cur_anim, pAnimals anim_arr, int map_len, int health);
+void turn_wolf_f(pAnimals cur_anim, pAnimals anim_arr, int map_len, int health);
+void check_near_Anims(Animals cur_anim, pAnimals anim_arr, int *id_arr, int map_len);
+void move_animal(pAnimals cur_anim, pAnimals anim_arr, int index, int map_len);
+>>>>>>> Stashed changes
 
 int main() {
 	setlocale(LC_ALL, "Russian");
@@ -26,6 +37,9 @@ int main() {
 	struct Settings settings = get_settings();
 	struct Animals *animals;
 	struct Anim_counter anim_cnt;
+	animal_turn[0] = turn_rabbit;
+	animal_turn[1] = turn_wolf_m;
+	animal_turn[2] = turn_wolf_f;
 
 	animals = (struct Animals*)calloc(settings.map_length * settings.map_length, sizeof(struct Animals));
 	anim_cnt.rab_cnt = randomize(settings.rab1, settings.rab2);
@@ -40,34 +54,19 @@ int main() {
 
 	for (int i = 0; i < settings.map_length; i++) {
 		for (int j = 0; j < settings.map_length; j++) {
-			printf("%c", (animals + j + i * settings.map_length)->type);
+			printf("%c", Animal_symbols[(animals + j + i * settings.map_length)->type]);
 		}
 		printf("\n");
 	}
 
 	system("pause");
 	while (1) {
-
-
 		system("cls"); 
 		turn(animals, settings.map_length, settings.reprod_chance, settings.wolf_health);
 		for (int i = 0; i < settings.map_length; i++) {
 			for (int j = 0; j < settings.map_length; j++) {
-				switch ((animals + j + i * settings.map_length)->type) {
-					case A_RABBIT:
-						SetConsoleTextAttribute(hConsole, 12);
-						break;
-					case A_WOLF_F:
-						SetConsoleTextAttribute(hConsole, 10); 
-						break;
-					case A_WOLF_M:
-						SetConsoleTextAttribute(hConsole, 14); 
-						break;
-					default:
-						SetConsoleTextAttribute(hConsole, 0);
-				}
-				
-				printf("%c", (animals + j + i * settings.map_length)->type); 
+				SetConsoleTextAttribute(hConsole, Animal_colors[(animals + j + i * settings.map_length)->type]);
+				printf("%c", Animal_symbols[(animals + j + i * settings.map_length)->type]); 
 			}
 			printf("\n");
 		}
@@ -101,8 +100,12 @@ void generate_model(struct Animals *anim_arr, struct Anim_counter anim_cnt, int 
 	place_animals(anim_arr, anim_cnt.wlf_f_cnt, A_WOLF_F, map_len, an_health);
 }
 
+<<<<<<< Updated upstream
 void place_animals(struct Animals *anim_arr, int cur_anim_cnt, char an_type, int map_len, int an_health) {
 	//int n = 0;
+=======
+void place_animals(pAnimals anim_arr, int cur_anim_cnt, int an_type, int map_len, int an_health) {
+>>>>>>> Stashed changes
 	int offset;
 	while (cur_anim_cnt > 0) {
 		for (int i = 0; i < map_len; i++) {
@@ -118,9 +121,7 @@ void place_animals(struct Animals *anim_arr, int cur_anim_cnt, char an_type, int
 				}
 			}
 		}
-		//n++;
 	}
-	//printf("%d\n\n", n);
 }
 
 void turn(struct Animals *anim_arr, int map_len, int reprod_chance, int an_health) {
@@ -130,22 +131,19 @@ void turn(struct Animals *anim_arr, int map_len, int reprod_chance, int an_healt
 			offset = j + i * map_len;
 			if ((anim_arr + offset)->isMoved == 0) {
 				(anim_arr + offset)->isMoved = 1;
-				switch ((anim_arr + offset)->type) {
-				case A_RABBIT:
-					turn_rabbit((anim_arr + offset), anim_arr, map_len, reprod_chance);
-					break;
-				case A_WOLF_M:
-					turn_wolf_m((anim_arr + offset), anim_arr, map_len, reprod_chance);
-					break;
-				case A_WOLF_F:
-					turn_wolf_f((anim_arr + offset), anim_arr, map_len, reprod_chance);
-					break;
-				default:
-					break;
+				if ((anim_arr + offset)->type == A_RABBIT) {
+					animal_turn[A_RABBIT - 1]((anim_arr + offset), anim_arr, map_len, reprod_chance);
+				}
+				else if ((anim_arr + offset)->type == A_VOID) {
+					continue;
+				}
+				else {
+					animal_turn[((anim_arr + offset)->type) - 1]((anim_arr + offset), anim_arr, map_len, reprod_chance);
 				}
 			}
 		}
 	}
+
 	for (int i = 0; i < map_len; i++) {
 		for (int j = 0; j < map_len; j++) {
 			offset = j + i * map_len;
@@ -300,30 +298,14 @@ void check_near_Anims(struct Animals cur_anim, struct Animals *anim_arr, int *id
 	for (int i = -1; i <= 1; i++) {
 		for (int j = -1; j <= 1; j++) {
 			if ((i == 0) && (j == 0)) {
-				//continue;
-				*(id_arr + index) = 0;
+				*(id_arr + index) = A_VOID;
 			}
 			else {
 				locX = cur_anim.x + j;
 				locY = cur_anim.y + i;
 				if ((locY > -1) && (locY < map_len) && (locX > -1) && (locX < map_len)) {
 					offset = locX + locY * map_len;
-					switch ((anim_arr + offset)->type) {
-					case A_VOID:
-						*(id_arr + index) = 0;
-						break;
-					case A_RABBIT:
-						*(id_arr + index) = 1;
-						break;
-					case A_WOLF_M:
-						*(id_arr + index) = 3;
-						break;
-					case A_WOLF_F:
-						*(id_arr + index) = 2;
-						break;
-					default:
-						break;
-					}
+					*(id_arr + index) = (anim_arr + offset)->type;
 				}
 				else {
 					*(id_arr + index) = -1;

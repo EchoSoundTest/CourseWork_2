@@ -7,13 +7,28 @@
 #define A_VOID '.'
 
 
+<<<<<<< Updated upstream
 struct Animals {
 		char type;
+=======
+typedef struct {
+		int type;
+>>>>>>> Stashed changes
 		int x;
 		int y;
 		int health;
 		int isMoved;
+<<<<<<< Updated upstream
 };
+=======
+} Animals;
+
+typedef Animals* pAnimals;
+
+const char Animal_symbols[] = { '.', 0x7F, '@', '#' };
+const int Animal_colors[] = { 0, 12, 14, 10 };
+void (*animal_turn[3])(pAnimals, pAnimals, int, int);
+>>>>>>> Stashed changes
 
 struct Anim_counter {
 	int rab_cnt;
