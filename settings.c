@@ -2,8 +2,8 @@
 
 #include "settings.h"
 
-struct Settings get_settings() {
-	struct Settings set;
+Settings get_settings() {
+	Settings set;
 	
 #ifndef DEBUG
 	printf("¬ведите размер пол€: ");
