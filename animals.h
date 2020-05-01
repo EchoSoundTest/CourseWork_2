@@ -25,7 +25,6 @@ typedef Animals* pAnimals;
 
 const char Animal_symbols[] = { '.', 0x7F, '@', '#' };
 const int Animal_colors[] = { 0, 12, 14, 10 };
-void (*animal_turn[3])(pAnimals, pAnimals, int, int);
 
 struct Anim_counter {
 	int rab_cnt;

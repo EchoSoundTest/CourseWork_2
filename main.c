@@ -10,12 +10,15 @@
 int randomize(int val1, int val2); /*Функция возвращает случайное целое число в диапазоне от val1 до val2 включительно*/
 void generate_model(pAnimals anim_arr, struct Anim_counter anim_cnt, int map_len, int an_health);
 void place_animals(pAnimals anim_arr, int cur_anim_cnt, int an_type, int map_len, int an_health);
-void turn(pAnimals anim_arr, int map_len, int reprod_chance, int an_health);
-void turn_rabbit(pAnimals cur_anim, pAnimals anim_arr, int map_len, int reprod_chance);
-void turn_wolf_m(pAnimals cur_anim, pAnimals anim_arr, int map_len, int health);
-void turn_wolf_f(pAnimals cur_anim, pAnimals anim_arr, int map_len, int health);
+void turn(pAnimals anim_arr, int map_len, Settings set);
+void turn_void(pAnimals cur_anim, pAnimals anim_arr, int map_len, Settings set);
+void turn_rabbit(pAnimals cur_anim, pAnimals anim_arr, int map_len, Settings set);
+void turn_wolf_m(pAnimals cur_anim, pAnimals anim_arr, int map_len, Settings set);
+void turn_wolf_f(pAnimals cur_anim, pAnimals anim_arr, int map_len, Settings set);
 void check_near_Anims(Animals cur_anim, pAnimals anim_arr, int *id_arr, int map_len);
 void move_animal(pAnimals cur_anim, pAnimals anim_arr, int index, int map_len);
+
+void(*animal_turn[4])(pAnimals, pAnimals, int, Settings);
 
 int main() {
 	setlocale(LC_ALL, "Russian");
@@ -26,9 +29,10 @@ int main() {
 	Settings settings = get_settings();
 	pAnimals animals;
 	struct Anim_counter anim_cnt;
-	animal_turn[0] = turn_rabbit;
-	animal_turn[1] = turn_wolf_m;
-	animal_turn[2] = turn_wolf_f;
+	animal_turn[0] = turn_void;
+	animal_turn[1] = turn_rabbit;
+	animal_turn[2] = turn_wolf_m;
+	animal_turn[3] = turn_wolf_f;
 
 	animals = (pAnimals)calloc(settings.map_length * settings.map_length, sizeof(Animals));
 	anim_cnt.rab_cnt = randomize(settings.rab1, settings.rab2);
@@ -49,7 +53,7 @@ int main() {
 	system("pause");
 	while (1) {
 		system("cls"); 
-		turn(animals, settings.map_length, settings.reprod_chance, settings.wolf_health);
+		turn(animals, settings.map_length, settings);
 		for (int i = 0; i < settings.map_length; i++) {
 			for (int j = 0; j < settings.map_length; j++) {
 				SetConsoleTextAttribute(hConsole, Animal_colors[(animals + j + i * settings.map_length)->type]);
@@ -57,7 +61,7 @@ int main() {
 			}
 			printf("\n");
 		}
-
+		
 		SetConsoleTextAttribute(hConsole, 7);
 		system("pause");
 	}
@@ -106,22 +110,14 @@ void place_animals(pAnimals anim_arr, int cur_anim_cnt, int an_type, int map_len
 	}
 }
 
-void turn(pAnimals anim_arr, int map_len, int reprod_chance, int an_health) {
+void turn(pAnimals anim_arr, int map_len, Settings set) {
 	int offset;
 	for (int i = 0; i < map_len; i++) {
 		for (int j = 0; j < map_len; j++) {
 			offset = j + i * map_len;
 			if ((anim_arr + offset)->isMoved == 0) {
 				(anim_arr + offset)->isMoved = 1;
-				if ((anim_arr + offset)->type == A_RABBIT) {
-					animal_turn[A_RABBIT - 1]((anim_arr + offset), anim_arr, map_len, reprod_chance);
-				}
-				else if ((anim_arr + offset)->type == A_VOID) {
-					continue;
-				}
-				else {
-					animal_turn[((anim_arr + offset)->type) - 1]((anim_arr + offset), anim_arr, map_len, reprod_chance);
-				}
+				animal_turn[((anim_arr + offset)->type)]((anim_arr + offset), anim_arr, map_len, set);
 			}
 		}
 	}
@@ -134,7 +130,11 @@ void turn(pAnimals anim_arr, int map_len, int reprod_chance, int an_health) {
 	}
 }
 
-void turn_rabbit(pAnimals cur_anim, pAnimals anim_arr, int map_len, int reprod_chance) {
+void turn_void(pAnimals cur_anim, pAnimals anim_arr, int map_len, Settings set) {
+
+}
+
+void turn_rabbit(pAnimals cur_anim, pAnimals anim_arr, int map_len, Settings set) {
 	int nearAnims[9];																	
 	int turn_vars = 0;																	
 	int num;
@@ -164,7 +164,7 @@ void turn_rabbit(pAnimals cur_anim, pAnimals anim_arr, int map_len, int reprod_c
 	}
 	move_animal(cur_anim, anim_arr, index, map_len);
 
-	if (randomize(1, 100) <= reprod_chance) {
+	if (randomize(1, 100) <= set.reprod_chance) {
 		check_near_Anims(*cur_anim, anim_arr, nearAnims, map_len);
 		nearAnims[4] = 1;
 		for (int i = 0; i < 9; i++) {
@@ -194,7 +194,7 @@ void turn_rabbit(pAnimals cur_anim, pAnimals anim_arr, int map_len, int reprod_c
 #endif
 }
 
-void turn_wolf_m(pAnimals cur_anim, pAnimals anim_arr, int map_len, int health) {
+void turn_wolf_m(pAnimals cur_anim, pAnimals anim_arr, int map_len, Settings set) {
 	int nearAnims[9];
 	int turn_vars = 0;
 	int num;
@@ -233,7 +233,7 @@ void turn_wolf_m(pAnimals cur_anim, pAnimals anim_arr, int map_len, int health) 
 #endif
 }
 
-void turn_wolf_f(pAnimals cur_anim, pAnimals anim_arr, int map_len, int health) {
+void turn_wolf_f(pAnimals cur_anim, pAnimals anim_arr, int map_len, Settings set) {
 	int nearAnims[9];
 	int turn_vars = 0;
 	int num;
