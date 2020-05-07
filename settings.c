@@ -20,14 +20,14 @@ Settings get_settings() {
 	scanf("%d %d", &set.wlf_f1, &set.wlf_f2);
 #else
 	set.map_length = 50;
-	set.reprod_chance = 10;
+	set.reprod_chance = 30;
 	set.rab1 = 10;
 	set.rab2 = 20;
 	set.wlf_f1 = 10;
 	set.wlf_f2 = 20;
 	set.wlf_m1 = 10;
 	set.wlf_m2 = 20;
-	set.wolf_health = 100;
+	set.wolf_health = 5;
 #endif
 	
 	return set;
